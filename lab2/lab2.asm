@@ -67,6 +67,7 @@ ENABLE_A20:                                     ;Открыть линию A20
     ;out    64h, al
     ;mov    al, 0DFh
     ;out    60h, al
+	
 SAVE_MASK:                                      ;Сохранить маски прерываний     
     in      al,21h
     mov     INT_MASK_M,al                  
