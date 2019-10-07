@@ -1,85 +1,86 @@
 .386P
 .MODEL  LARGE
-;‘вагЄвгал ¤ ­­ле
-S_DESC  struc                                   ;‘вагЄвга  бҐЈ¬Ґ­в­®Ј® ¤ҐбЄаЁЇв®а 
-    LIMIT       dw 0                            ;‹Ё¬Ёв бҐЈ¬Ґ­в  (15:00)    
-    BASE_L      dw 0                            ;Ђ¤аҐб Ў §л, ¬« ¤и п з бвм (15:0)
-    BASE_M      db 0                            ;Ђ¤аҐб Ў §л, баҐ¤­пп з бвм (23:16)
-    ACCESS      db 0                            ;Ѓ ©в ¤®бвгЇ 
-    ATTRIBS     db 0                            ;‹Ё¬Ёв бҐЈ¬Ґ­в  (19:16) Ё  ваЁЎгвл
-    BASE_H      db 0                            ;Ђ¤аҐб Ў §л, бв аи п з бвм
+;Структуры данных
+S_DESC  struc                                   ;Структура сегментного дескриптора
+    LIMIT       dw 0                            ;Лимит сегмента (15:00)    
+    BASE_L      dw 0                            ;Адрес базы, младшая часть (15:0)
+    BASE_M      db 0                            ;Адрес базы, средняя часть (23:16)
+    ACCESS      db 0                            ;Байт доступа
+    ATTRIBS     db 0                            ;Лимит сегмента (19:16) и атрибуты
+    BASE_H      db 0                            ;Адрес базы, старшая часть
 S_DESC  ends        
-I_DESC  struc                                   ;‘вагЄвга  ¤ҐбЄаЁЇв®а  в Ў«Ёжл ЇаҐалў ­Ё©
-    OFFS_L      dw 0                            ;Ђ¤аҐб ®Ўа Ў®взЁЄ  (0:15)
-    SEL         dw 0                            ;‘Ґ«ҐЄв®а Є®¤ , б®¤Ґа¦ йҐЈ® Є®¤ ®Ўа Ў®взЁЄ 
-    PARAM_CNT   db 0                            ;Џ а ¬Ґвал
-    ACCESS      db 0                            ;“а®ўҐ­м ¤®бвгЇ 
-    OFFS_H      dw 0                            ;Ђ¤аҐб ®Ўа Ў®взЁЄ  (31:16)
+I_DESC  struc                                   ;Структура дескриптора таблицы прерываний
+    OFFS_L      dw 0                            ;Адрес обработчика (0:15)
+    SEL         dw 0                            ;Селектор кода, содержащего код обработчика
+    PARAM_CNT   db 0                            ;Параметры
+    ACCESS      db 0                            ;Уровень доступа
+    OFFS_H      dw 0                            ;Адрес обработчика (31:16)
 I_DESC  ends        
-R_IDTR  struc                                   ;‘вагЄвга  IDTR
+R_IDTR  struc                                   ;Структура IDTR
     LIMIT       dw 0                            
-    IDT_L       dw 0                            ;‘¬ҐйҐ­ЁҐ ЎЁвл (0-15)
-    IDT_H       dw 0                            ;‘¬ҐйҐ­ЁҐ ЎЁвл (31-16)
+    IDT_L       dw 0                            ;Смещение биты (0-15)
+    IDT_H       dw 0                            ;Смещение биты (31-16)
 R_IDTR  ends
-;”« ЈЁ га®ў­Ґ© ¤®бвгЇ  бҐЈ¬Ґ­в®ў
-ACS_PRESENT     EQU 10000000B                   ;PXXXXXXX - ЎЁв ЇаЁбгвбвўЁп, бҐЈ¬Ґ­в ЇаЁбгвбвўгҐв ў ®ЇҐа вЁў­®© Ї ¬пвЁ
-ACS_CSEG        EQU 00011000B                   ;XXXXIXXX - вЁЇ бҐЈ¬Ґ­в , ¤«п ¤ ­­ле = 0, ¤«п Є®¤  1
-ACS_DSEG        EQU 00010000B                   ;XXXSXXXX - ЎЁв бҐЈ¬Ґ­в , ¤ ­­л© ®ЎкҐЄв бҐЈ¬Ґ­в(бЁбвҐ¬­лҐ ®ЎкҐЄвл ¬®Јгв Ўлвм ­Ґ бҐЈ¬Ґ­вл)
-ACS_READ        EQU 00000010B                   ;XXXXXXRX - ЎЁв звҐ­Ёп, ў®§¬®¦­®бвм звҐ­Ёп Ё§ ¤агЈ®Ј® бҐЈ¬Ґ­в 
-ACS_WRITE       EQU 00000010B                   ;XXXXXXWX - ЎЁв § ЇЁбЁ, ¤«п бҐЈ¬Ґ­в  ¤ ­­ле а §Ґаи Ґв § ЇЁбм
-ACS_CODE        =   ACS_PRESENT or ACS_CSEG     ;AR бҐЈ¬Ґ­в  Є®¤ 
-ACS_DATA =  ACS_PRESENT or ACS_DSEG or ACS_WRITE;AR бҐЈ¬Ґ­в  ¤ ­­ле
-ACS_STACK=  ACS_PRESENT or ACS_DSEG or ACS_WRITE;AR бҐЈ¬Ґ­в  бвҐЄ 
+;Флаги уровней доступа сегментов
+ACS_PRESENT     EQU 10000000B                   ;PXXXXXXX - бит присутствия, сегмент присутствует в оперативной памяти
+ACS_CSEG        EQU 00011000B                   ;XXXXIXXX - тип сегмента, для данных = 0, для кода 1
+ACS_DSEG        EQU 00010000B                   ;XXXSXXXX - бит сегмента, данный объект сегмент(системные объекты могут быть не сегменты)
+ACS_READ        EQU 00000010B                   ;XXXXXXRX - бит чтения, возможность чтения из другого сегмента
+ACS_WRITE       EQU 00000010B                   ;XXXXXXWX - бит записи, для сегмента данных разершает запись
+ACS_CODE        =   ACS_PRESENT or ACS_CSEG     ;AR сегмента кода
+ACS_DATA =  ACS_PRESENT or ACS_DSEG or ACS_WRITE;AR сегмента данных
+ACS_STACK=  ACS_PRESENT or ACS_DSEG or ACS_WRITE;AR сегмента стека
 ACS_INT_GATE    EQU 00001110B
-ACS_TRAP_GATE   EQU 00001111B                   ;XXXXSICR - бҐЈ¬Ґ­в, Ї®¤зЁ­Ґ­­л© бҐЈ¬Ґ­в Є®¤ , ¤®бвгЇҐ­ ¤«п звҐ­Ёп
-ACS_IDT         EQU ACS_DATA                    ;AR в Ў«Ёжл IDT    
+ACS_TRAP_GATE   EQU 00001111B                   ;XXXXSICR - сегмент, подчиненный сегмент кода, доступен для чтения
+ACS_IDT         EQU ACS_DATA                    ;AR таблицы IDT    
 ACS_INT         EQU ACS_PRESENT or ACS_INT_GATE
 ACS_TRAP        EQU ACS_PRESENT or ACS_TRAP_GATE
-ACS_DPL_3       EQU 01100000B                   ;X<DPL,DPL>XXXXX - ЇаЁўҐ«ҐЈЁЁ ¤®бвгЇ , ¤®бвгЇ ¬®¦Ґв Ї®«гзЁвм «оЎ®© Є®¤
-;‘ҐЈ¬Ґ­в Є®¤  аҐ «м­®Ј® аҐ¦Ё¬        
+ACS_DPL_3       EQU 01100000B                   ;X<DPL,DPL>XXXXX - привелегии доступа, доступ может получить любой код
+;Сегмент кода реального режима       
 CODE_RM segment para use16
 CODE_RM_BEGIN   = $
-    assume cs:CODE_RM,DS:DATA,ES:DATA           ;€­ЁжЁ «Ё§ жЁп аҐЈЁбва®ў ¤«п  ббҐ¬Ў«Ёа®ў ­Ёп
+    assume cs:CODE_RM,DS:DATA,ES:DATA           ;Инициализация регистров для ассемблирования
 START:
-    mov ax,DATA                                 ;€­ЁжЁ «Ё§ЁжЁп бҐЈ¬Ґ­в­ле аҐЈЁбва®ў
+    mov ax,DATA                                 ;Инициализиция сегментных регистров
     mov ds,ax                                   
     mov es,ax                          
-    lea dx,MSG_EXIT
+    lea dx,MSG_ENTER
     mov ah,9h
     int 21h
+    call INPUT                                  ;Ввод времени
+    mov ds:[TIME], al
     lea dx,MSG_HELLO
     mov ah,9h
     int 21h
-ANSWER:
-    mov ah, 8h
-    int 21h                                     ;Ћ¦Ё¤ ­ЁҐ Ї®¤вўҐа¦¤Ґ­Ёп
-    cmp al, 'p'
-    je ENABLE_A20
-    cmp al, 'e'
-    je END_PROG
-    jmp ANSWER
-ENABLE_A20:                                     ;ЋвЄалвм «Ё­Ёо A20
+    mov ah,7h
+    int 21h                                     ;Ожидание подтверждения
+PREPARE_RTC:                                    ;Подготовка часов RTC 
+    mov al,0Bh
+    out 70h,al                                  ;Выбрать регистр состояния 0Bh
+    in  al,71h                                  ;Получить значение регистра 0Bh
+    or  al,00000100b                            ;Установить бит DM в 1 - формат представления время в двоичном виде
+    out 71h,al                                  ;Записать измененное значение
+ENABLE_A20:                                     ;Открыть линию A20
     in  al,92h                                                                              
-    or  al,2                                    ;“бв ­®ўЁвм ЎЁв 1 ў 1                                                   
+    or  al,2                                    ;Установить бит 1 в 1                                                   
     out 92h,al                                                                                                                     
-    ;€«Ё в Є ¤«п бв але Є®¬ЇмовҐа®ў                                                                                                      0 LINE
+    ;Или так для старых компьютеров                                                                                                      0 LINE
     ;mov    al, 0D1h
     ;out    64h, al
     ;mov    al, 0DFh
     ;out    60h, al
-	
-SAVE_MASK:                                      ;‘®еа ­Ёвм ¬ бЄЁ ЇаҐалў ­Ё©     
+SAVE_MASK:                                      ;Сохранить маски прерываний     
     in      al,21h
     mov     INT_MASK_M,al                  
     in      al,0A1h
     mov     INT_MASK_S,al                 
-DISABLE_INTERRUPTS:                             ;‡ ЇаҐв ¬ бЄЁагҐ¬ле Ё ­Ґ¬ бЄЁагҐ¬ле ЇаҐалў ­Ё©        
-    cli                                         ;‡ ЇаҐв ¬ бЄЁаг¬ле ЇаҐалў ­Ё©
+DISABLE_INTERRUPTS:                             ;Запрет маскируемых и немаскируемых прерываний        
+    cli                                         ;Запрет маскирумых прерываний
     in  al,70h	
-	or	al,10000000b                            ;“бв ­®ўЁвм 7 ЎЁв ў 1 ¤«п § ЇаҐв  ­Ґ¬ бЄЁагҐ¬ле ЇаҐалў ­Ё©
+	or	al,10000000b                            ;Установить 7 бит в 1 для запрета немаскируемых прерываний
 	out	70h,al
 	nop	
-LOAD_GDT:                                       ;‡ Ї®«­Ёвм Ј«®Ў «м­го в Ў«Ёжг ¤ҐбЄаЁЇв®а®ў            
+LOAD_GDT:                                       ;Заполнить глобальную таблицу дескрипторов            
     mov ax,DATA
     mov dl,ah
     xor dh,dh
@@ -87,7 +88,7 @@ LOAD_GDT:                                       ;‡ Ї®«­Ёвм Ј«®Ў «м­го в Ў«Ёжг ¤Ґ
     shr dx,4
     mov si,ax
     mov di,dx
-WRITE_GDT:                                      ;‡ Ї®«­Ёвм ¤ҐбЄаЁЇв®а GDT
+WRITE_GDT:                                      ;Заполнить дескриптор GDT
     lea bx,GDT_GDT
     mov ax,si
     mov dx,di
@@ -96,7 +97,7 @@ WRITE_GDT:                                      ;‡ Ї®«­Ёвм ¤ҐбЄаЁЇв®а GDT
     mov [bx][S_DESC.BASE_L],ax
     mov [bx][S_DESC.BASE_M],dl
     mov [bx][S_DESC.BASE_H],dh
-WRITE_CODE_RM:                                  ;‡ Ї®«­Ёвм ¤ҐбЄаЁЇв®а бҐЈ¬Ґ­в  Є®¤  аҐ «м­®Ј® аҐ¦Ё¬ 
+WRITE_CODE_RM:                                  ;Заполнить дескриптор сегмента кода реального режима
     lea bx,GDT_CODE_RM
     mov ax,cs
     xor dh,dh
@@ -106,14 +107,14 @@ WRITE_CODE_RM:                                  ;‡ Ї®«­Ёвм ¤ҐбЄаЁЇв®а бҐЈ¬Ґ­в  Є
     mov [bx][S_DESC.BASE_L],ax
     mov [bx][S_DESC.BASE_M],dl
     mov [bx][S_DESC.BASE_H],dh
-WRITE_DATA:                                     ;‡ ЇЁб вм ¤ҐбЄаЁЇв®а бҐЈ¬Ґ­в  ¤ ­­ле
+WRITE_DATA:                                     ;Записать дескриптор сегмента данных
     lea bx,GDT_DATA
     mov ax,si
     mov dx,di
     mov [bx][S_DESC.BASE_L],ax
     mov [bx][S_DESC.BASE_M],dl
     mov [bx][S_DESC.BASE_H],dh
-WRITE_STACK:                                    ;‡ ЇЁб вм ¤ҐбЄаЁЇв®а бҐЈ¬Ґ­в  бвҐЄ 
+WRITE_STACK:                                    ;Записать дескриптор сегмента стека
     lea bx, GDT_STACK
     mov ax,ss
     xor dh,dh
@@ -123,7 +124,7 @@ WRITE_STACK:                                    ;‡ ЇЁб вм ¤ҐбЄаЁЇв®а бҐЈ¬Ґ­в  бв
     mov [bx][S_DESC.BASE_L],ax
     mov [bx][S_DESC.BASE_M],dl
     mov [bx][S_DESC.BASE_H],dh
-WRITE_CODE_PM:                                  ;‡ ЇЁб вм ¤ҐбЄаЁЇв®а Є®¤  § йЁйҐ­­®Ј® аҐ¦Ё¬ 
+WRITE_CODE_PM:                                  ;Записать дескриптор кода защищенного режима
     lea bx,GDT_CODE_PM
     mov ax,CODE_PM
     xor dh,dh
@@ -134,7 +135,7 @@ WRITE_CODE_PM:                                  ;‡ ЇЁб вм ¤ҐбЄаЁЇв®а Є®¤  § йЁйҐ
     mov [bx][S_DESC.BASE_M],dl
     mov [bx][S_DESC.BASE_H],dh        
     or  [bx][S_DESC.ATTRIBS],40h
-WRITE_IDT:                                      ;‡ ЇЁб вм ¤ҐбЄаЁЇв®а IDT
+WRITE_IDT:                                      ;Записать дескриптор IDT
     lea bx,GDT_IDT
     mov ax,si
     mov dx,di
@@ -145,132 +146,136 @@ WRITE_IDT:                                      ;‡ ЇЁб вм ¤ҐбЄаЁЇв®а IDT
     mov [bx][S_DESC.BASE_H],dh        
     mov IDTR.IDT_L,ax
     mov IDTR.IDT_H,dx
-FILL_IDT:                                       ;‡ Ї®«­Ёвм в Ў«Ёжг ¤ҐбЄаЁЇв®а®ў и«о§®ў ЇаҐалў ­Ё©
-    irpc    N, 0123456789ABCDEF                 ;‡ Ї®«­Ёвм и«о§л 00-0F ЁбЄ«озҐ­Ёп¬Ё
+FILL_IDT:                                       ;Заполнить таблицу дескрипторов шлюзов прерываний
+    irpc    N, 0123456789ABCDEF                 ;Заполнить шлюзы 00-0F исключениями
         lea eax, EXC_0&N
         mov IDT_0&N.OFFS_L,ax
         shr eax, 16
         mov IDT_0&N.OFFS_H,ax
     endm
-    irpc    N, 0123456789ABCDEF                 ;‡ Ї®«­Ёвм и«о§л 10-1F ЁбЄ«озҐ­Ёп¬Ё
+    irpc    N, 0123456789ABCDEF                 ;Заполнить шлюзы 10-1F исключениями
         lea eax, EXC_1&N
         mov IDT_1&N.OFFS_L,ax
         shr eax, 16
         mov IDT_1&N.OFFS_H,ax
     endm
-    lea eax, KEYBOARD_HANDLER                   ;Џ®¬ҐбвЁвм ®Ўа Ў®взЁЄ ЇаҐалў ­Ёп Є« ўЁ вгал ­  21 и«о§
+    lea eax, TIMER_HANDLER                      ;Поместить обработчик прерывания таймера на 20 шлюз
+    mov IDT_TIMER.OFFS_L,ax
+    shr eax, 16
+    mov IDT_TIMER.OFFS_H,ax
+    lea eax, KEYBOARD_HANDLER                   ;Поместить обработчик прерывания клавиатуры на 21 шлюз
     mov IDT_KEYBOARD.OFFS_L,ax
     shr eax, 16
     mov IDT_KEYBOARD.OFFS_H,ax
-    irpc    N, 0234567                           ;‡ Ї®«­Ёвм ўҐЄв®а  20, 22-27 § Ј«гиЄ ¬Ё
+    irpc    N, 234567                           ;Заполнить вектора 22-27 заглушками
         lea eax,DUMMY_IRQ_MASTER
         mov IDT_2&N.OFFS_L, AX
         shr eax,16
         mov IDT_2&N.OFFS_H, AX
     endm
-    irpc    N, 89ABCDEF                         ;‡ Ї®«­Ёвм ўҐЄв®а  28-2F § Ј«гиЄ ¬Ё
+    irpc    N, 89ABCDEF                         ;Заполнить вектора 28-2F заглушками
         lea eax,DUMMY_IRQ_SLAVE
         mov IDT_2&N.OFFS_L,ax
         shr eax,16
         mov IDT_2&N.OFFS_H,ax
     endm
-    lgdt fword ptr GDT_GDT                      ;‡ Јаг§Ёвм аҐЈЁбва GDTR
-    lidt fword ptr IDTR                         ;‡ Јаг§Ёвм аҐЈЁбва IDTR
-    mov eax,cr0                                 ;Џ®«гзЁвм гЇа ў«пойЁ© аҐЈЁбва cr0
-    or  al,00000001b                            ;“бв ­®ўЁвм ЎЁв PE ў 1
-    mov cr0,eax                                 ;‡ ЇЁб вм Ё§¬Ґ­Ґ­­л© cr0 Ё вҐ¬ б ¬л¬ ўЄ«озЁвм § йЁйҐ­­л© аҐ¦Ё¬
-OVERLOAD_CS:                                    ;ЏҐаҐ§ Јаг§Ёвм бҐЈ¬Ґ­в Є®¤  ­  ҐЈ® ¤ҐбЄаЁЇв®а
+    lgdt fword ptr GDT_GDT                      ;Загрузить регистр GDTR
+    lidt fword ptr IDTR                         ;Загрузить регистр IDTR
+    mov eax,cr0                                 ;Получить управляющий регистр cr0
+    or  al,00000001b                            ;Установить бит PE в 1
+    mov cr0,eax                                 ;Записать измененный cr0 и тем самым включить защищенный режим
+OVERLOAD_CS:                                    ;Перезагрузить сегмент кода на его дескриптор
     db  0EAH
     dw  $+4
     dw  CODE_RM_DESC        
-OVERLOAD_SEGMENT_REGISTERS:                     ;ЏҐаҐЁ­ЁжЁ «Ё§Ёа®ў вм ®бв «м­лҐ бҐЈ¬Ґ­в­лҐ аҐЈЁбвал ­  ¤ҐбЄаЁЇв®ал
+OVERLOAD_SEGMENT_REGISTERS:                     ;Переинициализировать остальные сегментные регистры на дескрипторы
     mov ax,DATA_DESC
     mov ds,ax                         
     mov es,ax                         
     mov ax,STACK_DESC
     mov ss,ax                         
     xor ax,ax
-    mov fs,ax                                   ;ЋЎ­г«Ёвм аҐЈЁбва fs
-    mov gs,ax                                   ;ЋЎ­г«Ёвм аҐЈЁбва gs
-    lldt ax                                     ;ЋЎ­г«Ёвм аҐЈЁбва LDTR - ­Ґ ЁбЇ®«м§®ў вм в Ў«Ёжл «®Є «м­ле ¤ҐбЄаЁЇв®а®ў
+    mov fs,ax                                   ;Обнулить регистр fs
+    mov gs,ax                                   ;Обнулить регистр gs
+    lldt ax                                     ;Обнулить регистр LDTR - не использовать таблицы локальных дескрипторов
 PREPARE_TO_RETURN:
-    push cs                                     ;‘ҐЈ¬Ґ­в Є®¤ 
-    push offset BACK_TO_RM                      ;‘¬ҐйҐ­ЁҐ в®зЄЁ ў®§ўа в 
-    lea  edi,ENTER_PM                           ;Џ®«гзЁвм в®зЄг ўе®¤  ў § йЁйҐ­­л© аҐ¦Ё¬
-    mov  eax,CODE_PM_DESC                       ;Џ®«гзЁвм ¤ҐбЄаЁЇв®а Є®¤  § йЁйҐ­­®Ј® аҐ¦Ё¬ 
-    push eax                                    ;‡ ­ҐбвЁ Ёе ў бвҐЄ
+    push cs                                     ;Сегмент кода
+    push offset BACK_TO_RM                      ;Смещение точки возврата
+    lea  edi,ENTER_PM                           ;Получить точку входа в защищенный режим
+    mov  eax,CODE_PM_DESC                       ;Получить дескриптор кода защищенного режима
+    push eax                                    ;Занести их в стек
     push edi                                    
-REINITIALIAZE_CONTROLLER_FOR_PM:                ;ЏҐаҐЁ­ЁжЁ «Ё§Ёа®ў вм Є®­ва®««Ґа ЇаҐалў ­Ё© ­  ўҐЄв®а  20h, 28h
-    mov al,00010001b                            ;ICW1 - ЇҐаҐЁ­ЁжЁ «Ё§ жЁп Є®­ва®««Ґа  ЇаҐалў ­Ё©
-    out 20h,al                                  ;ЏҐаҐЁ­ЁжЁ «Ё§ЁагҐ¬ ўҐ¤гйЁ© Є®­ва®««Ґа
-    out 0A0h,al                                 ;ЏҐаҐЁ­ЁжЁ «Ё§ЁагҐ¬ ўҐ¤®¬л© Є®­ва®««Ґа
-    mov al,20h                                  ;ICW2 - ­®¬Ґа Ў §®ў®Ј® ўҐЄв®а  ЇаҐалў ­Ё©
-    out 21h,al                                  ;ўҐ¤гйҐЈ® Є®­ва®««Ґа 
-    mov al,28h                                  ;ICW2 - ­®¬Ґа Ў §®ў®Ј® ўҐЄв®а  ЇаҐалў ­Ё©
-    out 0A1h,al                                 ;ўҐ¤®¬®Ј® Є®­ва®««Ґа 
-    mov al,04h                                  ;ICW3 - ўҐ¤гйЁ© Є®­ва®««Ґа Ї®¤Є«озҐ­ Є 3 «Ё­ЁЁ
+REINITIALIAZE_CONTROLLER_FOR_PM:                ;Переинициализировать контроллер прерываний на вектора 20h, 28h
+    mov al,00010001b                            ;ICW1 - переинициализация контроллера прерываний
+    out 20h,al                                  ;Переинициализируем ведущий контроллер
+    out 0A0h,al                                 ;Переинициализируем ведомый контроллер
+    mov al,20h                                  ;ICW2 - номер базового вектора прерываний
+    out 21h,al                                  ;ведущего контроллера
+    mov al,28h                                  ;ICW2 - номер базового вектора прерываний
+    out 0A1h,al                                 ;ведомого контроллера
+    mov al,04h                                  ;ICW3 - ведущий контроллер подключен к 3 линии
     out 21h,al       
-    mov al,02h                                  ;ICW3 - ўҐ¤®¬л© Є®­ва®««Ґа Ї®¤Є«озҐ­ Є 3 «Ё­ЁЁ
+    mov al,02h                                  ;ICW3 - ведомый контроллер подключен к 3 линии
     out 0A1h,al      
-    mov al,11h                                  ;ICW4 - аҐ¦Ё¬ бЇҐжЁ «м­®© Ї®«­®© ў«®¦Ґ­­®бвЁ ¤«п ўҐ¤гйҐЈ® Є®­ва®««Ґа 
+    mov al,11h                                  ;ICW4 - режим специальной полной вложенности для ведущего контроллера
     out 21h,al        
-    mov al,01h                                  ;ICW4 - аҐ¦Ё¬ ®Ўлз­®© Ї®«­®© ў«®¦Ґ­­®бвЁ ¤«п ўҐ¤®¬®Ј® Є®­ва®««Ґа 
+    mov al,01h                                  ;ICW4 - режим обычной полной вложенности для ведомого контроллера
     out 0A1h,al       
-    mov al, 0                                   ;ђ §¬ бЄЁа®ў вм ЇаҐалў ­Ёп
-    out 21h,al                                  ;‚Ґ¤гйҐЈ® Є®­ва®««Ґа 
-    out 0A1h,al                                 ;‚Ґ¤®¬®Ј® Є®­ва®««Ґа 
-ENABLE_INTERRUPTS_0:                            ;ђ §аҐиЁвм ¬ бЄЁагҐ¬лҐ Ё ­Ґ¬ бЄЁагҐ¬лҐ ЇаҐалў ­Ёп
+    mov al, 0                                   ;Размаскировать прерывания
+    out 21h,al                                  ;Ведущего контроллера
+    out 0A1h,al                                 ;Ведомого контроллера
+ENABLE_INTERRUPTS_0:                            ;Разрешить маскируемые и немаскируемые прерывания
     in  al,70h	
-	and	al,01111111b                            ;“бв ­®ўЁвм 7 ЎЁв ў 0 ¤«п § ЇаҐв  ­Ґ¬ бЄЁагҐ¬ле ЇаҐалў ­Ё©
+	and	al,01111111b                            ;Установить 7 бит в 0 для запрета немаскируемых прерываний
 	out	70h,al
 	nop
-    sti                                         ;ђ §аҐиЁвм ¬ бЄЁагҐ¬лҐ ЇаҐалў ­Ёп
-GO_TO_CODE_PM:                                  ;ЏҐаҐе®¤ Є бҐЈ¬Ґ­вг Є®¤  § йЁйҐ­­®Ј® аҐ¦Ё¬ 
+    sti                                         ;Разрешить маскируемые прерывания
+GO_TO_CODE_PM:                                  ;Переход к сегменту кода защищенного режима
     db 66h                                      
     retf
-BACK_TO_RM:                                     ;’®зЄ  ў®§ўа в  ў аҐ «м­л© аҐ¦Ё¬
-    cli                                         ;‡ ЇаҐв ¬ бЄЁагҐ¬ле ЇаҐалў ­Ё©
-    in  al,70h	                                ;€ ­Ґ ¬ бЄЁагҐ¬ле ЇаҐалў ­Ё©
-	or	AL,10000000b                            ;“бв ­®ўЁвм 7 ЎЁв ў 1 ¤«п § ЇаҐв  ­Ґ¬ бЄЁагҐ¬ле ЇаҐалў ­Ё©
+BACK_TO_RM:                                     ;Точка возврата в реальный режим
+    cli                                         ;Запрет маскируемых прерываний
+    in  al,70h	                                ;И не маскируемых прерываний
+	or	AL,10000000b                            ;Установить 7 бит в 1 для запрета немаскируемых прерываний
 	out	70h,AL
 	nop
-REINITIALISE_CONTROLLER:                        ;ЏҐаҐЁ­Ёж «Ё§ жЁп Є®­ва®««Ґа  ЇаҐалў ­Ё©               
-    mov al,00010001b                            ;ICW1 - ЇҐаҐЁ­ЁжЁ «Ё§ жЁп Є®­ва®««Ґа  ЇаҐалў ­Ё©
-    out 20h,al                                  ;ЏҐаҐЁ­ЁжЁ «Ё§ЁагҐ¬ ўҐ¤гйЁ© Є®­ва®««Ґа
-    out 0A0h,al                                 ;ЏҐаҐЁ­ЁжЁ «Ё§ЁагҐ¬ ўҐ¤®¬л© Є®­ва®««Ґа
-    mov al,8h                                   ;ICW2 - ­®¬Ґа Ў §®ў®Ј® ўҐЄв®а  ЇаҐалў ­Ё©
-    out 21h,al                                  ;ўҐ¤гйҐЈ® Є®­ва®««Ґа 
-    mov al,70h                                  ;ICW2 - ­®¬Ґа Ў §®ў®Ј® ўҐЄв®а  ЇаҐалў ­Ё©
-    out 0A1h,al                                 ;ўҐ¤®¬®Ј® Є®­ва®««Ґа 
-    mov al,04h                                  ;ICW3 - ўҐ¤гйЁ© Є®­ва®««Ґа Ї®¤Є«озҐ­ Є 3 «Ё­ЁЁ
+REINITIALISE_CONTROLLER:                        ;Переиницализация контроллера прерываний               
+    mov al,00010001b                            ;ICW1 - переинициализация контроллера прерываний
+    out 20h,al                                  ;Переинициализируем ведущий контроллер
+    out 0A0h,al                                 ;Переинициализируем ведомый контроллер
+    mov al,8h                                   ;ICW2 - номер базового вектора прерываний
+    out 21h,al                                  ;ведущего контроллера
+    mov al,70h                                  ;ICW2 - номер базового вектора прерываний
+    out 0A1h,al                                 ;ведомого контроллера
+    mov al,04h                                  ;ICW3 - ведущий контроллер подключен к 3 линии
     out 21h,al       
-    mov al,02h                                  ;ICW3 - ўҐ¤®¬л© Є®­ва®««Ґа Ї®¤Є«озҐ­ Є 3 «Ё­ЁЁ
+    mov al,02h                                  ;ICW3 - ведомый контроллер подключен к 3 линии
     out 0A1h,al      
-    mov al,11h                                  ;ICW4 - аҐ¦Ё¬ бЇҐжЁ «м­®© Ї®«­®© ў«®¦Ґ­­®бвЁ ¤«п ўҐ¤гйҐЈ® Є®­ва®««Ґа 
+    mov al,11h                                  ;ICW4 - режим специальной полной вложенности для ведущего контроллера
     out 21h,al        
-    mov al,01h                                  ;ICW4 - аҐ¦Ё¬ ®Ўлз­®© Ї®«­®© ў«®¦Ґ­­®бвЁ ¤«п ўҐ¤®¬®Ј® Є®­ва®««Ґа 
+    mov al,01h                                  ;ICW4 - режим обычной полной вложенности для ведомого контроллера
     out 0A1h,al
-PREPARE_SEGMENTS:                               ;Џ®¤Ј®в®ўЄ  бҐЈ¬Ґ­в­ле аҐЈЁбва®ў ¤«п ў®§ўа в  ў аҐ «м­л© аҐ¦Ё¬          
-    mov GDT_CODE_RM.LIMIT,0FFFFh                ;“бв ­®ўЄ  «Ё¬Ёв  бҐЈ¬Ґ­в  Є®¤  ў 64KB
-    mov GDT_DATA.LIMIT,0FFFFh                   ;“бв ­®ўЄ  «Ё¬Ёв  бҐЈ¬Ґ­в  ¤ ­­ле ў 64KB
-    mov GDT_STACK.LIMIT,0FFFFh                  ;“бв ­®ўЄ  «Ё¬Ёв  бҐЈ¬Ґ­в  бвҐЄ  ў 64KB
-    db  0EAH                                    ;ЏҐаҐ§ Јаг§Ёвм аҐЈЁбва cs
+PREPARE_SEGMENTS:                               ;Подготовка сегментных регистров для возврата в реальный режим          
+    mov GDT_CODE_RM.LIMIT,0FFFFh                ;Установка лимита сегмента кода в 64KB
+    mov GDT_DATA.LIMIT,0FFFFh                   ;Установка лимита сегмента данных в 64KB
+    mov GDT_STACK.LIMIT,0FFFFh                  ;Установка лимита сегмента стека в 64KB
+    db  0EAH                                    ;Перезагрузить регистр cs
     dw  $+4
-    dw  CODE_RM_DESC                            ;Ќ  бҐЈ¬Ґ­в Є®¤  аҐ «м­®Ј® аҐ¦Ё¬ 
-    mov ax,DATA_DESC                            ;‡ Јаг§Ё¬ бҐЈ¬Ґ­в­лҐ аҐЈЁбвал ¤ҐбЄаЁЇв®а®¬ бҐЈ¬Ґ­в  ¤ ­­ле
+    dw  CODE_RM_DESC                            ;На сегмент кода реального режима
+    mov ax,DATA_DESC                            ;Загрузим сегментные регистры дескриптором сегмента данных
     mov ds,ax                                   
     mov es,ax                                   
     mov fs,ax                                   
     mov gs,ax                                   
     mov ax,STACK_DESC
-    mov ss,ax                                   ;‡ Јаг§Ё¬ аҐЈЁбва бвҐЄ  ¤ҐбЄаЁЇв®а®¬ бвҐЄ 
-ENABLE_REAL_MODE:                               ;‚Є«озЁ¬ аҐ «м­л© аҐ¦Ё¬
+    mov ss,ax                                   ;Загрузим регистр стека дескриптором стека
+ENABLE_REAL_MODE:                               ;Включим реальный режим
     mov eax,cr0
-    and al,11111110b                            ;ЋЎ­г«Ё¬ 0 ЎЁв аҐЈЁбва  cr0
+    and al,11111110b                            ;Обнулим 0 бит регистра cr0
     mov cr0,eax                        
     db  0EAH
     dw  $+4
-    dw  CODE_RM                                 ;ЏҐаҐ§ Јаг§Ё¬ аҐЈЁбва Є®¤ 
+    dw  CODE_RM                                 ;Перезагрузим регистр кода
     mov ax,STACK_A
     mov ss,ax                      
     mov ax,DATA
@@ -282,92 +287,180 @@ ENABLE_REAL_MODE:                               ;‚Є«озЁ¬ аҐ «м­л© аҐ¦Ё¬
     mov IDTR.LIMIT, 3FFH                
     mov dword ptr  IDTR+2, 0            
     lidt fword ptr IDTR                 
-REPEAIR_MASK:                                   ;‚®ббв ­®ўЁвм ¬ бЄЁ ЇаҐалў ­Ё©
+REPEAIR_MASK:                                   ;Восстановить маски прерываний
     mov al,INT_MASK_M
-    out 21h,al                                  ;‚Ґ¤гйҐЈ® Є®­ва®««Ґа 
+    out 21h,al                                  ;Ведущего контроллера
     mov al,INT_MASK_S
-    out 0A1h,al                                 ;‚Ґ¤®¬®Ј® Є®­ва®««Ґа 
-ENABLE_INTERRUPTS:                              ;ђ §аҐиЁвм ¬ бЄЁагҐ¬лҐ Ё ­Ґ¬ бЄЁагҐ¬лҐ ЇаҐалў ­Ёп
+    out 0A1h,al                                 ;Ведомого контроллера
+ENABLE_INTERRUPTS:                              ;Разрешить маскируемые и немаскируемые прерывания
     in  al,70h	
-	and	al,01111111b                            ;“бв ­®ўЁвм 7 ЎЁв ў 0 ¤«п а §аҐиҐ­Ёп ­Ґ¬ бЄЁагҐ¬ле ЇаҐалў ­Ё©
+	and	al,01111111b                            ;Установить 7 бит в 0 для разрешения немаскируемых прерываний
 	out	70h,al
     nop
-    sti                                         ;ђ §аҐиЁвм ¬ бЄЁагҐ¬лҐ ЇаҐалў ­Ёп
-DISABLE_A20:                                    ;‡ Єалвм ўҐ­вЁ«м A20
+    sti                                         ;Разрешить маскируемые прерывания
+DISABLE_A20:                                    ;Закрыть вентиль A20
     in  al,92h
-    and al,11111101b                            ;ЋЎ­г«Ёвм 1 ЎЁв - § ЇаҐвЁвм «Ё­Ёо A20
+    and al,11111101b                            ;Обнулить 1 бит - запретить линию A20
     out 92h, al
-EXIT:                                           ;‚ле®¤ Ё§ Їа®Ја ¬¬л
+EXIT:                                           ;Выход из программы
     mov ax,3h
-    int 10H                                     ;ЋзЁбвЁвм ўЁ¤Ґ®-аҐ¦Ё¬    
-    lea dx,MSG_HELLO_RM
+    int 10H                                     ;Очистить видео-режим    
+    lea dx,MSG_EXIT
     mov ah,9h
-    int 21h                                     ;‚лўҐбвЁ б®®ЎйҐ­ЁҐ
-    jmp START
-END_PROG:
+    int 21h                                     ;Вывести сообщение
     mov ax,4C00h
-    int 21H                                     ;‚ле®¤ ў dos
-SIZE_CODE_RM    = ($ - CODE_RM_BEGIN)           ;‹Ё¬Ёв бҐЈ¬Ґ­в  Є®¤ 
+    int 21H                                     ;Выход в dos
+INPUT proc near                                 ;Процедура ввода время-нахождения в защищенном режиме 
+    mov ah,0ah
+    xor di,di
+    mov dx,offset ds:[INPUT_TIME]
+    int 21h
+    mov dl,0ah
+    mov ah,02
+    int 21h 
+    
+    mov si,offset INPUT_TIME+2 
+    cmp byte ptr [si],"-" 
+    jnz ii1
+    mov di,1 
+    inc si   
+II1:
+    xor ax,ax
+    mov bx,10  
+II2:
+    mov cl,[si]
+    cmp cl,0dh 
+    jz ii3
+    cmp cl,'0' 
+    jl er
+    cmp cl,'9' 
+    ja er
+ 
+    sub cl,'0' 
+    mul bx     
+    add ax,cx  
+    inc si     
+    jmp ii2    
+ER:   
+    mov dx, offset MSG_ERROR
+    mov ah,09
+    int 21h
+    int 20h
+II3:
+    ret
+INPUT endp
+SIZE_CODE_RM    = ($ - CODE_RM_BEGIN)           ;Лимит сегмента кода
 CODE_RM ends
-;‘ҐЈ¬Ґ­в Є®¤  аҐ «м­®Ј® аҐ¦Ё¬ 
+;Сегмент кода реального режима
 CODE_PM  segment para use32
 CODE_PM_BEGIN   = $
-    assume cs:CODE_PM,ds:DATA,es:DATA           ;“Є § ­ЁҐ бҐЈ¬Ґ­в®ў ¤«п Є®¬ЇЁ«пжЁЁ
-ENTER_PM:                                       ;’®зЄ  ўе®¤  ў § йЁйҐ­­л© аҐ¦Ё¬
-    call CLRSCR                                 ;Џа®жҐ¤га  ®зЁбвЄЁ нЄа ­ 
-    xor  edi,edi                                ;‚ edi б¬ҐйҐ­ЁҐ ­  нЄа ­Ґ
-    lea  esi,MSG_HELLO_PM                       ;‚ esi  ¤аҐб ЎгдҐа 
-    call BUFFER_OUTPUT                          ;‚лўҐбвЁ бва®Єг-ЇаЁўҐвбвўЁҐ ў § йЁйҐ­­®¬ аҐ¦Ё¬Ґ
-    add  edi,160                                ;ЏҐаҐўҐбвЁ Єгаб®а ­  б«Ґ¤гойго бва®Єг
+    assume cs:CODE_PM,ds:DATA,es:DATA           ;Указание сегментов для компиляции
+ENTER_PM:                                       ;Точка входа в защищенный режим
+    call CLRSCR                                 ;Процедура очистки экрана
+    xor  edi,edi                                ;В edi смещение на экране
+    lea  esi,MSG_HELLO_PM                       ;В esi адрес буфера
+    call BUFFER_OUTPUT                          ;Вывести строку-приветствие в защищенном режиме
+    add  edi,160                                ;Перевести курсор на следующую строку
     lea  esi,MSG_KEYBOARD
-    call BUFFER_OUTPUT                          ;‚лўҐбвЁ Ї®«Ґ ¤«п ўлў®¤  бЄ ­-Є®¤  Є« ўЁ вгал
-WAITING_ESC:                                    ;Ћ¦Ё¤ ­ЁҐ ­ ¦ вЁп Є­®ЇЄЁ ўле®¤  Ё§ § йЁйҐ­­®Ј® аҐ¦Ё¬ 
-    jmp  WAITING_ESC                            ;…б«Ё Ўл« ­ ¦ в ­Ґ ESC
-EXIT_PM:                                        ;’®зЄ  ўле®¤  Ё§ 32-ЎЁв­®Ј® бҐЈ¬Ґ­в  Є®¤     
+    call BUFFER_OUTPUT                          ;Вывести поле для вывода скан-кода клавиатуры
+    mov edi,320
+    lea esi,MSG_TIME
+    call BUFFER_OUTPUT                          ;Вывести поле для вывода время
+    mov edi,480
+    lea esi,MSG_COUNT
+    call BUFFER_OUTPUT
+    mov DS:[COUNT],0
+WAITING_ESC:                                    ;Ожидание нажатия кнопки выхода из защищенного режима
+    jmp  WAITING_ESC                            ;Если был нажат не ESC
+EXIT_PM:                                        ;Точка выхода из 32-битного сегмента кода    
     db 66H
-    retf                                        ;ЏҐаҐе®¤ ў 16-ЎЁв­л© бҐЈ¬Ґ­в Є®¤ 
-EXIT_FROM_INTERRUPT:                            ;’®зЄ  ўле®¤  ¤«п ўле®¤  ­ Їап¬го Ё§ ®Ўа Ў®взЁЄ  ЇаҐалў ­Ё©
+    retf                                        ;Переход в 16-битный сегмент кода
+EXIT_FROM_INTERRUPT:                            ;Точка выхода для выхода напрямую из обработчика прерываний
     popad
     pop es
     pop ds
-    pop eax                                     ;‘­пвм б® бвҐЄ  бв ал© EIP
+    pop eax                                     ;Снять со стека старый EIP
     pop eax                                     ;CS  
-    pop eax                                     ;€ EFLAGS
-    sti                                         ;ЋЎп§ вҐ«м­®, ЎҐ§ нв®Ј® ®Ўа Ў®вЄ   ЇЇ а в­ле ЇаҐалў ­Ё© ®вЄ«озҐ­ 
+    pop eax                                     ;И EFLAGS
+    sti                                         ;Обязательно, без этого обработка аппаратных прерываний отключена
     db 66H
-    retf                                        ;ЏҐаҐе®¤ ў 16-ЎЁв­л© бҐЈ¬Ґ­в Є®¤     
+    retf                                        ;Переход в 16-битный сегмент кода    
+WORD_TO_DEC proc near                           ;Процедура перевода слова в строку
+    pushad    
+    movzx eax,ax
+    xor cx,cx              
+    mov bx,10              
+LOOP1:                                          ;Цикл по извлечению цифры             
+    xor dx,dx              
+    div bx                 
+    add dl,'0'             
+    push dx                
+    inc cx                 
+    test ax,ax             
+    jnz LOOP1          
+LOOP2:                                          ;Цикл по заполнению буфера                 
+    pop dx                 
+    mov [di],dl            
+    inc di                 
+    loop LOOP2         
+    popad
+    ret
+WORD_TO_DEC endp
+DIGIT_TO_HEX proc near                          ;Процедура перевода цифры в шеснадцатеричный вид
+    add al,'0'            
+    cmp al,'9'            
+    jle DTH_END           
+    add al,7              
+DTH_END:
+    ret        
+DIGIT_TO_HEX endp
+BYTE_TO_HEX proc near                           ;Процедура перевода числа в шеснадцатеричный вид
+    push ax
+    mov ah,al             
+    shr al,4              
+    call DIGIT_TO_HEX     
+    mov [di],al           
+    inc di                
+    mov al,ah             
+    and al,0Fh            
+    call DIGIT_TO_HEX     
+    mov [di],al           
+    inc di                
+    pop ax
+    ret    
+BYTE_TO_HEX endp
 M = 0                           
 IRPC N, 0123456789ABCDEF
-EXC_0&N label word                              ;ЋЎа Ў®взЁЄЁ ЁбЄ«озҐ­Ё©
+EXC_0&N label word                              ;Обработчики исключений
     cli 
     jmp EXC_HANDLER
 endm
 M = 010H
-IRPC N, 0123456789ABCDEF                        ;ЋЎа Ў®взЁЄЁ ЁбЄ«озҐ­Ё©
+IRPC N, 0123456789ABCDEF                        ;Обработчики исключений
 EXC_1&N label word                          
     cli
     jmp EXC_HANDLER
 endm
-EXC_HANDLER proc near                           ;Џа®жҐ¤га  ўлў®¤  ®Ўа Ў®вЄЁ ЁбЄ«озҐ­Ё©
-    call CLRSCR                                 ;ЋзЁбвЄ  нЄа ­ 
+EXC_HANDLER proc near                           ;Процедура вывода обработки исключений
+    call CLRSCR                                 ;Очистка экрана
     lea  esi, MSG_EXC
     mov  edi, 40*2
-    call BUFFER_OUTPUT                          ;‚лў®¤ ЇаҐ¤гЇаҐ¦¤Ґ­Ёп
-    pop eax                                     ;‘­пвм б® бвҐЄ  бв ал© EIP
+    call BUFFER_OUTPUT                          ;Вывод предупреждения
+    pop eax                                     ;Снять со стека старый EIP
     pop eax                                     ;CS  
-    pop eax                                     ;€ EFLAGS
-    sti                                         ;ЋЎп§ вҐ«м­®, ЎҐ§ нв®Ј® ®Ўа Ў®вЄ   ЇЇ а в­ле ЇаҐалў ­Ё© ®вЄ«озҐ­ 
+    pop eax                                     ;И EFLAGS
+    sti                                         ;Обязательно, без этого обработка аппаратных прерываний отключена
     db 66H
-    retf                                        ;ЏҐаҐе®¤ ў 16-ЎЁв­л© бҐЈ¬Ґ­в Є®¤     
+    retf                                        ;Переход в 16-битный сегмент кода    
 EXC_HANDLER     ENDP
-DUMMY_IRQ_MASTER proc near                      ;‡ Ј«гиЄ  ¤«п  ЇЇ а в­ле ЇаҐалў ­Ё© ўҐ¤гйҐЈ® Є®­ва®««Ґа 
+DUMMY_IRQ_MASTER proc near                      ;Заглушка для аппаратных прерываний ведущего контроллера
     push eax
     mov  al,20h
     out  20h,al
     pop  eax
     iretd
 DUMMY_IRQ_MASTER endp
-DUMMY_IRQ_SLAVE  proc near                      ;‡ Ј«гиЄ  ¤«п  ЇЇ а в­ле ЇаҐалў ­Ё© ўҐ¤®¬®Ј® Є®­ва®««Ґа 
+DUMMY_IRQ_SLAVE  proc near                      ;Заглушка для аппаратных прерываний ведомого контроллера
     push eax
     mov  al,20h
     out  20h,al
@@ -375,64 +468,133 @@ DUMMY_IRQ_SLAVE  proc near                      ;‡ Ј«гиЄ  ¤«п  ЇЇ а в­ле ЇаҐалў 
     pop  eax
     iretd
 DUMMY_IRQ_SLAVE  endp
-KEYBOARD_HANDLER proc near                      ;ЋЎа Ў®взЁЄ ЇаҐалў ­Ёп Є« ўЁ вгал
+TIMER_HANDLER proc near                         ;Обработчик прерываний системного таймера
     push ds
     push es
-    pushad                                      ;‘®еа ­Ёвм а биЁаҐ­­лҐ аҐЈЁбвал ®ЎйҐЈ® ­ §­ зҐ­Ёп
-    in   al,60h                                 ;‘зЁв вм бЄ ­ Є®¤ Ї®б«Ґ¤­Ґ© ­ ¦ в®© Є« ўЁиЁ                                ;
-    cmp  al, 1                                  ;…б«Ё Ўл« ­ ¦ в 'ESC'
-    jne   KEYBOARD_RETURN                        
-    mov  al,20h                                 ;’®Ј¤  ­  ўле®¤ Ё§ § йЁйҐ­­®Ј® аҐ¦Ё¬    
+    pushad                                      ;Занести в стек расширенные регистры общего назначения 
+    mov  ax,DATA_DESC                           ;Переинициализировать сегментные регистры
+    mov  ds,ax
+    inc  ds:[COUNT]                             ;Увеличить значение счетчика
+    lea  edi,ds:[BUFFER_COUNT]
+    mov  ax,ds:[COUNT]
+    call WORD_TO_DEC                            ;Преобразовать счётчик в строку
+    mov  edi,538
+    lea  esi,BUFFER_COUNT
+    call BUFFER_OUTPUT                          ;Вывести значение счетчика
+SHOW_TIMER:
+    mov  al,0h                                  ;Выбрать регистр секунд cmos
+    out  70h,al
+    in   al,71h                                 ;Прочитать значение секунд
+    cmp  al,ds:[SECOND]                         ;Если секунда та же самая
+    je   SKIP_SECOND                            ;То пропустить вывод
+    mov  ds:[SECOND],al                         ;Иначе записать значение новой секунды
+    mov  al,ds:[TIME]                           ;Получить значение оставшегося время
+    cmp  ds:[TIME],0                            ;Если время подошло к концу
+    je   DISABLE_PM                             ;То на выход из защищенного режима
+    xor  ah,ah
+    lea  edi,ds:[BUFFER_TIME]                   
+    call WORD_TO_DEC                            ;Преобразовать его в строку
+    mov  edi,422
+    lea  esi,BUFFER_TIME                        
+    call BUFFER_OUTPUT                          ;Вывести значение оставшегося время
+    dec  ds:[TIME]                              ;Уменьшить значение оставшегося времени
+    lea  esi,BUFFER_TIME
+    call BUFFER_CLEAR                           ;Очистка буфера
+    jmp  SKIP_SECOND                            ;На выход из обработки время
+DISABLE_PM:                                     ;Выход из защищенного режима
+    mov  al,20h
+    out  20h,al
+    db 0eah                                     ;Дальний jmp
+    dd OFFSET EXIT_FROM_INTERRUPT               ;На метку
+    dw CODE_PM_DESC                             ;В сегменте
+SKIP_SECOND:                                    ;Секунда та же, не надо производить никаких действий    
+    mov  al,20h
+    out  20h,al                                 ;Отпарвка сигнала контроллеру прерываний
+    popad
+    pop es
+    pop ds
+    iretd
+TIMER_HANDLER endp
+KEYBOARD_HANDLER proc near                      ;Обработчик прерывания клавиатуры
+    push ds
+    push es
+    pushad                                      ;Сохранить расширенные регистры общего назначения
+    in   al,60h                                 ;Считать скан код последней нажатой клавиши                                ;
+    cmp  al,1                                   ;Если был нажат 'ESC'
+    je   KEYBOARD_EXIT                          ;Тогда на выход из защищенного режима   
+    mov  ds:[KEY_SCAN_CODE],al                  ;Записать его в память
+    lea  edi,ds:[BUFFER_SCAN_CODE]
+    mov  al,ds:[KEY_SCAN_CODE]
+    xor  ah,ah
+    call BYTE_TO_HEX                            ;Преобразовать скан-код в строку
+    mov  edi,200
+    lea  esi,BUFFER_SCAN_CODE                   
+    call BUFFER_OUTPUT                          ;Вывести строку со скан-кодом
+    jmp  KEYBOARD_RETURN  
+KEYBOARD_EXIT:
+    mov  al,20h
     out  20h,al
     db 0eah
     dd OFFSET EXIT_FROM_INTERRUPT 
     dw CODE_PM_DESC  
 KEYBOARD_RETURN:
     mov  al,20h
-    out  20h,al                                 ;ЋвЇ аўЄ  бЁЈ­ «  Є®­ва®««Ґаг ЇаҐалў ­Ё©
-    popad                                       ;‚®ббв ­®ўЁвм §­ зҐ­Ёп аҐЈЁбва®ў
+    out  20h,al                                 ;Отпарвка сигнала контроллеру прерываний
+    popad                                       ;Восстановить значения регистров
     pop es
     pop ds
-    iretd                                       ;‚ле®¤ Ё§ ЇаҐалў ­Ёп
+    iretd                                       ;Выход из прерывания
 KEYBOARD_HANDLER endp
-CLRSCR  proc near                               ;Џа®жҐ¤га  ®зЁбвЄЁ Є®­б®«Ё
+CLRSCR  proc near                               ;Процедура очистки консоли
     push es
     pushad
-    mov  ax,TEXT_DESC                           ;Џ®¬ҐбвЁвм ў ax ¤ҐбЄаЁЇв®а вҐЄбв 
+    mov  ax,TEXT_DESC                           ;Поместить в ax дескриптор текста
     mov  es,ax
     xor  edi,edi
-    mov  ecx,80*25                              ;Љ®«ЁзҐбвў® бЁ¬ў®«®ў ў ®Є­Ґ
+    mov  ecx,80*25                              ;Количество символов в окне
     mov  ax,700h
     rep  stosw
     popad
     pop  es
     ret
 CLRSCR  endp
-BUFFER_OUTPUT proc near                         ;Џа®жҐ¤га  ўлў®¤  вҐЄбв®ў®Ј® ЎгдҐа , ®Є ­зЁў ойҐЈ®бп 0
+BUFFER_CLEAR  proc near                         ;Процедура очистки буфера
+    mov al,' '
+    mov [esi+0],al
+    mov [esi+1],al
+    mov [esi+2],al
+    mov [esi+3],al
+    mov [esi+4],al
+    mov [esi+5],al
+    mov [esi+6],al
+    mov [esi+7],al
+    ret
+BUFFER_CLEAR  endp
+BUFFER_OUTPUT proc near                         ;Процедура вывода текстового буфера, оканчивающегося 0
     push es
-    pushad
-    mov  ax,TEXT_DESC                           ;Џ®¬ҐбвЁвм ў es бҐ«ҐЄв®а вҐЄбв 
+    PUSHAD
+    mov  ax,TEXT_DESC                           ;Поместить в es селектор текста
     mov  es,ax
-OUTPUT_LOOP:                                    ;–ЁЄ« Ї® ўлў®¤г ЎгдҐа 
+OUTPUT_LOOP:                                    ;Цикл по выводу буфера
     lodsb                                       
     or   al,al
-    jz   OUTPUT_EXIT                            ;…б«Ё ¤®и«® ¤® 0, в® Є®­Ґж ўле®¤ 
+    jz   OUTPUT_EXIT                            ;Если дошло до 0, то конец выхода
     stosb
     inc  edi
     jmp  OUTPUT_LOOP
-OUTPUT_EXIT:                                    ;‚ле®¤ Ё§ Їа®жҐ¤гал ўлў®¤ 
+OUTPUT_EXIT:                                    ;Выход из процедуры вывода
     popad
     pop  es
     ret
 BUFFER_OUTPUT ENDP
 SIZE_CODE_PM     =       ($ - CODE_PM_BEGIN)
 CODE_PM  ENDS
-;‘ҐЈ¬Ґ­в ¤ ­­ле аҐ «м­®Ј®/§ йЁйҐ­­®Ј® аҐ¦Ё¬ 
-DATA    segment para use16                      ;‘ҐЈ¬Ґ­в ¤ ­­ле аҐ «м­®Ј®/§ йЁйҐ­­®Ј® аҐ¦Ё¬ 
+;Сегмент данных реального/защищенного режима
+DATA    segment para use16                      ;Сегмент данных реального/защищенного режима
 DATA_BEGIN      = $
-    ;GDT - Ј«®Ў «м­ п в Ў«Ёж  ¤ҐбЄаЁЇв®а®ў
+    ;GDT - глобальная таблица дескрипторов
     GDT_BEGIN   = $
-    GDT label   word                            ;ЊҐвЄ  ­ з «  GDT (GDT: ­Ґ а Ў®в Ґв)
+    GDT label   word                            ;Метка начала GDT (GDT: не работает)
     GDT_0       S_DESC <0,0,0,0,0,0>                              
     GDT_GDT     S_DESC <GDT_SIZE-1,,,ACS_DATA,0,>                 
     GDT_CODE_RM S_DESC <SIZE_CODE_RM-1,,,ACS_CODE,0,>             
@@ -441,17 +603,17 @@ DATA_BEGIN      = $
     GDT_TEXT    S_DESC <2000h-1,8000h,0Bh,ACS_DATA+ACS_DPL_3,0,0> 
     GDT_CODE_PM S_DESC <SIZE_CODE_PM-1,,,ACS_CODE+ACS_READ,0,>    
     GDT_IDT     S_DESC <SIZE_IDT-1,,,ACS_IDT,0,>                  
-    GDT_SIZE    = ($ - GDT_BEGIN)               ;ђ §¬Ґа GDT
-    ;‘Ґ««ҐЄв®ал бҐЈ¬Ґ­в®ў
+    GDT_SIZE    = ($ - GDT_BEGIN)               ;Размер GDT
+    ;Селлекторы сегментов
     CODE_RM_DESC = (GDT_CODE_RM - GDT_0)
     DATA_DESC    = (GDT_DATA - GDT_0)      
     STACK_DESC   = (GDT_STACK - GDT_0)
     TEXT_DESC    = (GDT_TEXT - GDT_0)  
     CODE_PM_DESC = (GDT_CODE_PM - GDT_0)
     IDT_DESC     = (GDT_IDT - GDT_0)
-    ;IDT - в Ў«Ёж  ¤ҐбЄаЁЇв®а®ў ЇаҐалў ­Ё©
-    IDTR    R_IDTR  <SIZE_IDT,0,0>              ;”®а¬ в аҐЈЁбва  ITDR   
-    IDT label   word                            ;ЊҐвЄ  ­ з «  IDT
+    ;IDT - таблица дескрипторов прерываний
+    IDTR    R_IDTR  <SIZE_IDT,0,0>              ;Формат регистра ITDR   
+    IDT label   word                            ;Метка начала IDT
     IDT_BEGIN   = $
     IRPC    N, 0123456789ABCDEF
         IDT_0&N I_DESC <0, CODE_PM_DESC,0,ACS_TRAP,0>            ; 00...0F
@@ -459,28 +621,39 @@ DATA_BEGIN      = $
     IRPC    N, 0123456789ABCDEF
         IDT_1&N I_DESC <0, CODE_PM_DESC, 0, ACS_TRAP, 0>         ; 10...1F
     ENDM
-    IDT_20    I_DESC <0,CODE_PM_DESC,0,ACS_INT,0>
-    IDT_KEYBOARD I_DESC <0,CODE_PM_DESC,0,ACS_INT,0>             ;IRQ 1 - ЇаҐалў ­ЁҐ Є« ўЁ вгал
+    IDT_TIMER    I_DESC <0,CODE_PM_DESC,0,ACS_INT,0>             ;IRQ 0 - прерывание системного таймера
+    IDT_KEYBOARD I_DESC <0,CODE_PM_DESC,0,ACS_INT,0>             ;IRQ 1 - прерывание клавиатуры
     IRPC    N, 23456789ABCDEF
         IDT_2&N         I_DESC <0, CODE_PM_DESC, 0, ACS_INT, 0>  ; 22...2F
     ENDM
     SIZE_IDT        =       ($ - IDT_BEGIN)
-    MSG_HELLO           db "Ќ ¦¬ЁвҐ 'p', зв®Ўл ЇҐаҐ©вЁ ў § йЁйҐ­­л© аҐ¦Ё¬",13,10,"$"
-    MSG_HELLO_PM        db "‚л ­ е®¤ЁвҐбвм ў § йЁйҐ­­®¬ аҐ¦Ё¬Ґ!",0
-    MSG_HELLO_RM        db "‚л ўҐа­г«Ёбм ў аҐ «м­л© аҐ¦Ё¬",13,10,"$"
-    MSG_KEYBOARD        db "Ќ ¦¬ЁвҐ 'ESC', зв®Ўл ўҐа­гвмбп ў аҐ «м­л© аҐ¦Ё¬",0
-    MSG_EXC             db "€бЄ«озҐ­ЁҐ: XX",0
-    MSG_EXIT            db "Ќ ¦¬ЁвҐ 'e', зв®Ўл ўл©вЁ",13,10,"$"
-    MSG_ERROR           db "ЌҐЇа ўЁ«м­ п ®иЁЎЄ $"
-    HEX_TAB             db "0123456789ABCDEF"   ;’ Ў«Ёж  ­®¬Ґа®ў ЁбЄ«озҐ­Ё©
-    ESP32               dd  1 dup(?)            ;“Є § вҐ«м ­  ўҐаиЁ­г бвҐЄ 
-    INT_MASK_M          db  1 dup(?)            ;‡­ зҐ­ЁҐ аҐЈЁбва  ¬ б®Є ўҐ¤гйҐЈ® Є®­ва®««Ґа 
-    INT_MASK_S          db  1 dup(?)            ;‡­ зҐ­ЁҐ аҐЈЁбва  ¬ б®Є ўҐ¤®¬®Ј® Є®­ва®««Ґа  
-    
-	
-SIZE_DATA   = ($ - DATA_BEGIN)                  ;ђ §¬Ґа бҐЈ¬Ґ­в  ¤ ­­ле
+    MSG_HELLO           db "press any key to go to the protected mode",13,10,"$"
+    MSG_HELLO_PM        db "wellcome in protected mode",0
+    MSG_EXIT            db "wellcome back to real mode",13,10,"$"
+    MSG_KEYBOARD        db "keyboard scan code:            | press 'ESC' to come back to the real mode",0
+    MSG_TIME            db "                               | go back to RM in  XXXXXXX seconds",0
+    MSG_COUNT           db "quantity of interrupt calls:",0
+    MSG_EXC             db "exception: XX",0
+    MSG_ENTER           db "enter time in protected mode: $"
+    MSG_ERROR           db "incorrect error$"
+    HEX_TAB             db "0123456789ABCDEF"   ;Таблица номеров исключений
+    ESP32               dd  1 dup(?)            ;Указатель на вершину стека
+    INT_MASK_M          db  1 dup(?)            ;Значение регистра масок ведущего контроллера
+    INT_MASK_S          db  1 dup(?)            ;Значение регистра масок ведомого контроллера
+    KEY_SCAN_CODE       db  1 dup(?)            ;Ска-код последней нажатой клавиши
+    SECOND              db  1 dup(?)            ;Текущее значение секунд
+    TIME                db  1 dup(10)           ;Время нахождения в зазищенном режиме
+    COUNT               dw  1 dup(0)            ;Количество вызовов прерывания (диапазон от 0 до 65535)
+    BUFFER_COUNT        db  8 dup(' ')          ;Буфер для вывода количества вызовов прерываинй
+                        db  1 dup(0)
+    BUFFER_SCAN_CODE    db  8 dup(' ')          ;Буфер для вывода скан-кода клавиатуры
+                        db  1 dup(0)                
+    BUFFER_TIME         db  8 dup(' ')          ;Буфер для вывода оставшегося время в защищенном режиме
+                        db  1 dup(0)
+    INPUT_TIME          db  6,7 dup(?)          ;Буфер для ввода время        
+SIZE_DATA   = ($ - DATA_BEGIN)                  ;Размер сегмента данных
 DATA    ends
-;‘ҐЈ¬Ґ­в бвҐЄ  аҐ «м­®Ј®/§ йЁйҐ­­®Ј® аҐ¦Ё¬ 
+;Сегмент стека реального/защищенного режима
 STACK_A segment para stack
     db  1000h dup(?)
 STACK_A  ends
